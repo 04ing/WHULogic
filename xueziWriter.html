@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>血字作者榜单</title>
+    <link
+        href="https://fastly.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+        crossorigin="anonymous"
+    />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin: 0 auto;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+            vertical-align: middle;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>血字作者榜单</h1>
+        <p>点击相应的作者名字查看Ta的所有血字</p>
+        <button onclick="loadData()">刷新榜单</button>
+    </div>
+    <table id="leaderboard">
+        <thead>
+            <tr>
+                <th>排名</th>
+                <th>作者</th>
+                <th>次数</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 榜单数据将动态插入到这里 -->
+        </tbody>
+    </table>
+
+    <!-- 模态框：显示作者详细信息 -->
+    <div class="modal fade" id="authorModal" tabindex="-1" aria-labelledby="authorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="authorModalLabel">该作者的血字</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="authorDetails">
+                    <!-- 作者详细信息将动态插入到这里 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS (包含 Popper.js) -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"
+    ></script>
+
+    <script>
+        let authorDetailsMap = {}; // 存储作者详细信息
+
+        // 读取JSON文件并生成榜单
+        function loadData() {
+            fetch('./xuezi1.json') // JSON文件路径
+                .then(response => response.json()) // 解析JSON数据
+                .then(data => {
+                    const authorStats = {}; // 统计作者数据
+                    authorDetailsMap = {}; // 重置作者详细信息
+
+                    // 遍历数据，统计作者参与次数
+                    data.forEach(item => {
+                        const author = item.Writer.trim(); // 统一作者名字格式
+
+                        // 统计参与次数
+                        if (!authorStats[author]) {
+                            authorStats[author] = 0;
+                        }
+                        authorStats[author]++;
+
+                        // 存储作者详细信息
+                        if (!authorDetailsMap[author]) {
+                            authorDetailsMap[author] = [];
+                        }
+                        authorDetailsMap[author].push(item);
+                    });
+
+                    // 将统计结果转换为数组并排序
+                    const sortedAuthors = Object.keys(authorStats).map(author => ({
+                        name: author,
+                        count: authorStats[author]
+                    })).sort((a, b) => b.count - a.count); // 按参与次数从高到低排序
+
+                    // 渲染榜单
+                    renderTable(sortedAuthors);
+                })
+                .catch(error => console.error('加载数据失败:', error));
+        }
+
+        // 渲染榜单
+        function renderTable(data) {
+            const tbody = document.querySelector('#leaderboard tbody');
+            tbody.innerHTML = ''; // 清空现有内容
+
+            // 遍历数据并生成表格行
+            data.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>
+                        <button class="btn btn-link p-0" onclick="showAuthorDetails('${item.name}')">
+                            ${item.name}
+                        </button>
+                    </td>
+                    <td>${item.count}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 显示作者详细信息
+        function showAuthorDetails(author) {
+            const details = authorDetailsMap[author];
+            const modalBody = document.getElementById('authorDetails');
+            modalBody.innerHTML = ''; // 清空现有内容
+
+            // 显示作者详细信息
+            details.forEach(item => {
+                const detailItem = document.createElement('div');
+                detailItem.innerHTML = `
+                    <p><strong>序号: </strong>${item.Number}</p> 
+                    <p><strong>血字名称：</strong>${item.Name}</p>
+                    <p><strong>日期：</strong>${item.Date}</p>
+                    <p><strong>参与者：</strong>${item.Participants}</p>
+                    <p><strong>存活者：</strong>${item.Survivors}</p>
+                    <p><strong>参与人数:</strong> ${item.Nump}</p>
+                    <p><strong>存活人数:</strong> ${item.Numv}</p>
+                    <p><strong>存活率:</strong> ${(parseFloat(item.Srate) * 100).toFixed(2)}%</p>
+                    <p><strong>MVP:</strong> ${item.MVP}</p>
+                    <hr>
+                `;
+                modalBody.appendChild(detailItem);
+            });
+
+            // 显示模态框
+            const modal = new bootstrap.Modal(document.getElementById('authorModal'));
+            modal.show();
+        }
+
+        // 页面加载时自动加载数据
+        window.onload = loadData;
+    </script>
+</body>
+</html>

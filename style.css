@@ -1,0 +1,92 @@
+@media (min-width: 768px) {
+    .news-input{
+        width: 50%;
+    }
+}
+
+body::before{
+    display: block;
+    content: '';
+    height: 56px;
+}
+#JNH_pic{
+    margin-left: 100px;
+    width: 75%; 
+    height: auto
+}
+#carousel_pic1{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}
+
+#carousel_pic2{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}
+#carousel_pic3{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}
+#carousel_pic4{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}
+#carousel_pic5{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}
+#carousel_pic6{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}
+#carousel_pic7{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}
+#carousel_pic8{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}
+#carousel_pic9{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}
+#carousel_pic10{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}
+#carousel_pic11{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}
+#carousel_pic12{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}
+#carousel_pic13{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}
+#carousel_pic14{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}
+#carousel_pic15{
+    height: 500px;
+    width: auto;
+    margin: auto;
+}

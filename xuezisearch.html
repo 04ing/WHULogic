@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>血字查询</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* 水平居中 */
+      justify-content: center; /* 垂直居中 */
+      min-height: 100vh; /* 确保页面高度占满整个视口 */
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center; /* 标题文字居中 */
+      margin-bottom: 20px;
+      font-size: 28px; /* 调整字体大小 */
+      color: #007BFF; /* 调整字体颜色 */
+    }
+    h2 {
+      text-align: center; /* 标题文字居中 */
+      margin-bottom: 20px;
+      font-size: 20px; /* 调整字体大小 */
+    }
+    input {
+      padding: 10px;
+      width: 50%;
+      margin-right: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      width: 80%; /* 控制结果框宽度 */
+      max-width: 50%; /* 最大宽度 */
+      text-align: left; /* 结果内容左对齐 */
+    }
+    .search-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* 输入框和按钮居中 */
+      margin-bottom: 20px;
+    }
+    .gradient-btn {
+        background: linear-gradient(90deg, #6a11cb, #2575fc); /* 渐变背景 */
+        color: white; /* 文字颜色 */
+        padding: 10px 20px; /* 内边距 */
+        border-radius: 25px; /* 圆角 */
+        text-decoration: none; /* 去掉下划线 */
+        font-size: 16px; /* 字体大小 */
+        transition: transform 0.3s ease; /* 缩放过渡效果 */
+        margin-bottom: 20px; /* 下边距 */
+    }
+    .gradient-btn:hover {
+        transform: scale(1.05); /* 鼠标悬停时放大 */
+    }
+  </style>
+</head>
+<body>
+  <h1>查找2023-10-28至今武大推协的血字数据</h1>
+  <a href="./xueziRank.html" class="gradient-btn mt-2">点击查看血字参与和存活排行榜</a>
+  <a href="./xueziWriter.html" class="gradient-btn mt-2">点击查看血字作者排行榜</a>
+  <h2>通过血字名查找</h2>
+  <input type="text" id="searchInput1" placeholder="请输入血字名">
+  <button onclick="search1()">查找</button>
+  <div id="result1" class="result"></div>
+
+  <h2>通过作者查找</h2>
+  <input type="text" id="searchInput2" placeholder="请输入作者">
+  <button onclick="search2()">查找</button>
+  <div id="result2" class="result"></div>
+
+  <h2>查找自己参与的血字（输入自己的代号）</h2>
+  <input type="text" id="searchInput3" placeholder="请输入代号">
+  <button onclick="search3()">查找</button>
+  <div id="result3" class="result"></div>
+
+  <script>
+    let jsonData = []; // 用于存储加载的 JSON 数据
+
+    // 加载 JSON 文件
+    async function loadJsonData() {
+      try {
+        const response = await fetch('./xuezi1.json'); // JSON 文件路径
+        if (!response.ok) {
+          throw new Error('无法加载 JSON 文件');
+        }
+        jsonData = await response.json();
+        console.log('JSON 数据已加载：', jsonData); // 调试用
+      } catch (error) {
+        console.error('加载 JSON 文件失败：', error);
+      }
+    }
+
+    // 根据血字名查询
+    function search1() {
+      const keyword1 = document.getElementById('searchInput1').value.trim().toLowerCase();
+      const resultDiv1 = document.getElementById('result1');
+
+      if (!keyword1) {
+        resultDiv1.innerText = '请输入关键字';
+        return;
+      }
+
+      // 根据血字名查询
+      const matches1 = jsonData.filter(item => {
+        const name = item.Name ? String(item.Name).toLowerCase() : '';
+        return name.includes(keyword1);
+      });
+
+      // 显示结果
+      if (matches1.length > 0) {
+        resultDiv1.innerHTML = `已找到 ${matches1.length} 个符合条件的对象<br><br>` +matches1.map(item => `
+          <div>
+            <strong>序号:</strong> ${item.Number}<br> 
+            <strong>血字名:</strong> ${item.Name}<br> 
+            <strong>日期:</strong> ${item.Date}<br> 
+            <strong>作者:</strong> ${item.Writer}<br> 
+            <strong>参与者:</strong> ${item.Participants}<br>
+            <strong>幸存者:</strong> ${item.Survivors}<br>
+            <strong>参与人数:</strong> ${item.Nump}<br>
+            <strong>存活人数:</strong> ${item.Numv}<br>
+            <strong>存活率:</strong> ${(parseFloat(item.Srate) * 100).toFixed(2)}%<br>
+            <strong>MVP:</strong> ${item.MVP}<br>
+            <br>
+          </div>
+        `).join('');
+      } else {
+        resultDiv1.innerText = '未找到匹配的数据';
+      }
+    }
+
+    // 根据作者查询
+    function search2() {
+      const keyword2 = document.getElementById('searchInput2').value.trim().toLowerCase();
+      const resultDiv2 = document.getElementById('result2');
+
+      if (!keyword2) {
+        resultDiv2.innerText = '请输入作者代号';
+        return;
+      }
+
+      // 根据作者查询
+      const matches2 = jsonData.filter(item => {
+        const writer = item.Writer ? String(item.Writer).toLowerCase() : '';
+        return writer.includes(keyword2);
+      });
+
+      // 显示结果
+      if (matches2.length > 0) {
+        resultDiv2.innerHTML = `已找到 ${matches2.length} 个符合条件的对象<br><br>` +matches2.map(item => `
+          <div>
+            <strong>序号:</strong> ${item.Number}<br> 
+            <strong>血字名:</strong> ${item.Name}<br> 
+            <strong>日期:</strong> ${item.Date}<br> 
+            <strong>作者:</strong> ${item.Writer}<br> 
+            <strong>参与者:</strong> ${item.Participants}<br>
+            <strong>幸存者:</strong> ${item.Survivors}<br>
+            <strong>参与人数:</strong> ${item.Nump}<br>
+            <strong>存活人数:</strong> ${item.Numv}<br>
+            <strong>存活率:</strong> ${(parseFloat(item.Srate) * 100).toFixed(2)}%<br>
+            <strong>MVP:</strong> ${item.MVP}<br>
+            <br>
+          </div>
+        `).join('');
+      } else {
+        resultDiv2.innerText = '未找到匹配的数据';
+      }
+    }
+
+    // 查询自己参与的血字
+    function search3() {
+      const keyword3 = document.getElementById('searchInput3').value.trim().toLowerCase();
+      const resultDiv3 = document.getElementById('result3');
+
+      if (!keyword3) {
+        resultDiv3.innerText = '请输入代号';
+        return;
+      }
+
+      // 查询自己参与的血字
+      const matches3 = jsonData.filter(item => {
+        const participants = item.Participants ? String(item.Participants).toLowerCase() : '';
+        return participants.includes(keyword3);
+      });
+
+      // 显示结果
+      if (matches3.length > 0) {
+        resultDiv3.innerHTML = `已找到 ${matches3.length} 个符合条件的对象<br><br>` +matches3.map(item => `
+          <div>
+            <strong>序号:</strong> ${item.Number}<br> 
+            <strong>血字名:</strong> ${item.Name}<br> 
+            <strong>日期:</strong> ${item.Date}<br> 
+            <strong>作者:</strong> ${item.Writer}<br> 
+            <strong>参与者:</strong> ${item.Participants}<br>
+            <strong>幸存者:</strong> ${item.Survivors}<br>
+            <strong>参与人数:</strong> ${item.Nump}<br>
+            <strong>存活人数:</strong> ${item.Numv}<br>
+            <strong>存活率:</strong> ${(parseFloat(item.Srate) * 100).toFixed(2)}%<br>
+            <strong>MVP:</strong> ${item.MVP}<br>
+            <br>
+          </div>
+        `).join('');
+      } else {
+        resultDiv3.innerText = '未找到匹配的数据';
+      }
+    }
+
+    // 页面加载时加载 JSON 数据
+    window.onload = loadJsonData;
+  </script>
+</body>
+</html>

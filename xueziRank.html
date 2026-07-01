@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玩家血字参与和存活榜单</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 80%; /* 设置表格宽度 */
+            border-collapse: collapse; /* 合并边框 */
+            margin: 0 auto; /* 让表格水平居中 */
+        }
+        th, td {
+            padding: 10px; /* 设置内边距 */
+            text-align: center; /* 文字水平居中 */
+            vertical-align: middle; /* 文字垂直居中 */
+            border: 1px solid #ddd; /* 设置边框 */
+        }
+        th {
+            background-color: #f4f4f4; /* 表头背景颜色 */
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .highlight {
+            color: red; /* 红色字体 */
+            font-weight: bold; /* 加粗 */
+        }
+    </style>
+   
+</head>
+<body>
+    <div class="header">
+        <h1>玩家血字参与和存活榜单</h1>
+        <button onclick="loadData()">刷新榜单</button>
+    </div>
+    <table id="leaderboard">
+        <thead>
+            <tr>
+                <th>排名</th>
+                <th>玩家</th>
+                <th>参与次数</th>
+                <th>存活次数</th>
+                <th>存活率</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 榜单数据将动态插入到这里 -->
+        </tbody>
+    </table>
+
+    <script>
+        // 读取JSON文件并生成榜单
+        function loadData() {
+            fetch('./xuezi1.json') // JSON文件路径
+                .then(response => response.json()) // 解析JSON数据
+                .then(data => {
+                    const playerStats = {}; // 统计玩家数据
+
+                    // 遍历数据，统计参与次数和存活次数
+                    data.forEach(item => {
+                        const participants = new Set(item.Participants.split('、').map(name => name.replace(/[\u200B-\u200D\uFEFF]/g, '').trim()));
+                        const survivors = new Set(item.Survivors.split('、').map(name => name.replace(/[\u200B-\u200D\uFEFF]/g, '').trim()));
+
+                        // 统计参与次数
+                        participants.forEach(player => {
+                            if (!playerStats[player]) {
+                                playerStats[player] = { participation: 0, survival: 0 };
+                            }
+                            playerStats[player].participation++;
+                        });
+
+                        // 统计存活次数
+                        survivors.forEach(player => {
+                            if (playerStats[player]) {
+                                playerStats[player].survival++;
+                            }
+                        });
+                    });
+
+                    // 将统计结果转换为数组并计算存活率
+                    const sortedPlayers = Object.keys(playerStats).map(player => ({
+                        name: player,
+                        participation: playerStats[player].participation,
+                        survival: playerStats[player].survival,
+                        survivalRate: (playerStats[player].survival / playerStats[player].participation)
+                    })).sort((a, b) => {
+                        // 先按参与次数从高到低排序
+                        if (b.participation !== a.participation) {
+                            return b.participation - a.participation;
+                        }
+                        // 如果参与次数相同，按存活次数从高到低排序
+                        return b.survival - a.survival;
+                    });
+
+
+                    // 渲染榜单
+                    renderTable(sortedPlayers);
+                })
+                .catch(error => console.error('加载数据失败:', error));
+        }
+
+        // 渲染榜单
+        function renderTable(data) {
+            const tbody = document.querySelector('#leaderboard tbody');
+            tbody.innerHTML = ''; // 清空现有内容
+
+            // 遍历数据并生成表格行
+            data.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.name}</td>
+                    <td>${item.participation}</td>
+                    <td>${item.survival}</td>
+                    <td class="${item.survivalRate > 0.7 ? 'highlight' : ''}">${(parseFloat(item.survivalRate)*100).toFixed(2)}%</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        // 页面加载时自动加载数据
+        window.onload = loadData;
+    </script>
+</body>
+</html>
